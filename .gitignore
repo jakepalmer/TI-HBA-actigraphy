@@ -1,6 +1,13 @@
+rstudio
+ggir-output/output*
+hba-actigraphy-files/*csv
+
 # History files
+.bash_history
 .Rhistory
 .Rapp.history
+.local
+.config
 
 # Session Data files
 .RData
