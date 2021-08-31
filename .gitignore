@@ -1,6 +1,6 @@
 rstudio
 ggir-output/output*
-hba-actigraphy-files/*csv
+*csv
 
 # History files
 .bash_history

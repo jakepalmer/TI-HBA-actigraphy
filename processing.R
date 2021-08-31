@@ -1,146 +1,123 @@
 library(GGIR)
 library(tidyverse)
 
-data_in <- fs::path("/home/hba-actig/hba-actigraphy-files")
+#--- INPUTS ---
+
+### Check these ###
+diary_filename <- "HBA+LEISURE+Sleep+Diary_August_test.csv"
+max_days <- 7
+###################
+
+# These shouldn't need editing if using the Docker container with recommended
+# folder names.
+
+diary_raw <- fs::path(paste0("/home/hba-actig/hba-sleepdiary/", diary_filename))
+files_in <- fs::path("/home/hba-actig/hba-actigraph")
+diary_clean <- fs::path("/home/hba-actig/hba-sleepdiary/diary_clean.csv")
 data_out <- fs::path("/home/hba-actig/ggir-output")
+setwd(files_in)
 
-g.shell.GGIR(
-  mode = c(1,2,3,4,5),
-  overwrite = FALSE,
-  datadir = data_in,
-  outputdir = data_out,
-  do.report = c(2,4,5),
-  #=====================
-  # Part 2
-  #=====================
-  strategy = 1,
-  hrs.del.start = 0,
-  hrs.del.end = 0,
-  maxdur = 9,
-  includedaycrit = 16,
-  qwindow=c(0,24),
-  mvpathreshold =c(100),
-  bout.metric = 4,
-  excludefirstlast = FALSE,
-  includenightcrit = 16,
-  #=====================
-  # Part 3 + 4
-  #=====================
-  def.noc.sleep = 1,
-  outliers.only = TRUE,
-  criterror = 4,
-  do.visual = TRUE,
-  #=====================
-  # Part 5
-  #=====================
-  threshold.lig = c(30), 
-  threshold.mod = c(100),  
-  threshold.vig = c(400),
-  boutcriter = 0.8,      
-  boutcriter.in = 0.9,     
-  boutcriter.lig = 0.8,
-  boutcriter.mvpa = 0.8, 
-  boutdur.in = c(1,10,30), 
-  boutdur.lig = c(1,10),
-  boutdur.mvpa = c(1),
-  includedaycrit.part5 = 2/3,
-  #=====================
-  # Visual report
-  #=====================
-  timewindow = c("WW"),
-  visualreport=TRUE
-)
+#--- FUNCTIONS ---
 
-### All options ###
+clean_diary <- function(f) {
+  
+  col_names <- names(readr::read_csv(f, n_max = 0))
+  ids <- raw_files_pre %>% stringr::str_replace("RAW.csv", "")
+  
+  df <- read_csv(f, col_names = col_names, skip = 3) %>%
+    mutate(secs = "00") %>%
+    tidyr::unite("SleepOnsetDay1", c(TTS.1_1, TTS.1_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay2", c(TTS.2_1, TTS.2_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay3", c(TTS.3_1, TTS.3_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay4", c(TTS.4_1, TTS.4_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay5", c(TTS.5_1, TTS.5_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay6", c(TTS.6_1, TTS.6_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOnsetDay7", c(TTS.7_1, TTS.7_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay1", c(FWT.1_1, FWT.1_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay2", c(FWT.2_1, FWT.2_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay3", c(FWT.3_1, FWT.3_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay4", c(FWT.4_1, FWT.4_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay5", c(FWT.5_1, FWT.5_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay6", c(FWT.6_1, FWT.6_2, secs), sep = ":", remove=FALSE) %>%
+    tidyr::unite("SleepOffsetDay7", c(FWT.7_1, FWT.7_2, secs), sep = ":", remove=FALSE) %>%
+    dplyr::select(QID1, contains("SleepO")) %>%
+    dplyr::filter(QID1 %in% ids)
+  readr::write_csv(df, diary_clean)
+}
 
-# mode=c(1,2), 
-# f0=c(), 
-# f1=c(), 
-# selectdaysfile = c(), 
-# configfile=c(), 
-# overwrite = FALSE, 
-# strategy = 1, 
-# maxdur = 7, 
-# do.cal = TRUE, 
-# hrs.del.start = 0, 
-# hrs.del.end = 0, 
-# loglocation = c(), 
-# acc.metric = "ENMO", 
-# storefolderstructure = FALSE, 
-# windowsizes = c(5,900,3600), 
-# minloadcrit = 72, 
-# desiredtz = "Europe/London", 
-# chunksize = 1, 
-# do.enmo = TRUE, 
-# do.lfenmo = FALSE, 
-# do.en = FALSE, 
-# do.bfen = FALSE, 
-# do.hfen = FALSE, 
-# do.hfenplus = FALSE, 
-# do.mad = FALSE, 
-# do.anglex = FALSE, 
-# do.angley = FALSE, 
-# do.anglez = FALSE, 
-# do.roll_med_acc_x=FALSE, 
-# do.roll_med_acc_y=FALSE, 
-# do.roll_med_acc_z=FALSE, 
-# do.dev_roll_med_acc_x=FALSE, 
-# do.dev_roll_med_acc_y=FALSE, 
-# do.dev_roll_med_acc_z=FALSE, 
-# do.enmoa = FALSE, 
-# dynrange = c(), 
-# printsummary = FALSE, 
-# includedaycrit = 16, 
-# M5L5res = 10, 
-# winhr = 5, 
-# qwindow = c(0,24), 
-# qlevels = c(), 
-# ilevels = c(), 
-# mvpathreshold = 100, 
-# boutcriter = 0.8, 
-# ndayswindow = 7, 
-# idloc = 1, 
-# do.imp = TRUE, 
-# anglethreshold = 5, 
-# timethreshold = 5, 
-# ignorenonwear = TRUE, 
-# colid=1, 
-# coln1=2, 
-# nnights=7, 
-# outliers.only=FALSE, 
-# excludefirstlast=FALSE, 
-# excludefirstlast.part5=FALSE, 
-# criterror=3, 
-# includenightcrit=16, 
-# relyonguider=FALSE, 
-# sleeplogidnum=TRUE, 
-# def.noc.sleep=c(), 
-# do.visual=FALSE, 
-# viewingwindow = 1, 
-# dofirstpage = TRUE, 
-# visualreport = FALSE, 
-# print.filename = FALSE, 
-# backup.cal.coef = c(), 
-# bout.metric = 1, 
-# closedbout = FALSE, 
-# IVIS_windowsize_minutes=60, 
-# IVIS_epochsize_seconds=30, 
-# constrain2range = TRUE, 
-# do.part3.pdf = TRUE, 
-# boutcriter.in = 0.9, 
-# boutcriter.lig = 0.8, 
-# boutcriter.mvpa = 0.8, 
-# threshold.lig = 40, 
-# threshold.mod = 100,
-# threshold.vig = 400, 
-# timewindow = c("MM","WW"), 
-# boutdur.mvpa = c(1,5,10), 
-# boutdur.in = c(10,20,30), 
-# boutdur.lig = c(1,5,10), 
-# save_ms5rawlevels = FALSE, 
-# mvpadur = c(1,5,10), 
-# epochvalues2csv = FALSE, 
-# bout.metric = 1, 
-# window.summary.size = 10, 
-# dayborder = 0, 
-# iglevels = c()
+clean_filenames_pre <- function(f) {
+  new_f <- paste0(stringr::str_replace(f, "RAW.csv", " RAW.csv"))
+  fs::file_move(f, new_f)
+}
+
+clean_filenames_post <- function(f) {
+  new_f <- paste0(stringr::str_replace(f, " RAW.csv", "RAW.csv"))
+  fs::file_move(f, new_f)
+}
+
+runGGIR <- function() {
+  g.shell.GGIR(
+    mode = c(1,2,3,4,5),
+    overwrite = FALSE,
+    datadir = files_in,
+    outputdir = data_out,
+    do.report = c(2,4,5),
+    idloc = 5,
+    desiredtz = "Australian Eastern Standard Time",
+    #=====================
+    # Part 2
+    #=====================
+    strategy = 1,
+    hrs.del.start = 0,
+    hrs.del.end = 0,
+    maxdur = 9,
+    includedaycrit = 16,
+    qwindow=c(0,24),
+    mvpathreshold =c(100),
+    bout.metric = 4,
+    excludefirstlast = FALSE,
+    includenightcrit = 16,
+    #=====================
+    # Part 3 + 4
+    #=====================
+    def.noc.sleep = 1,
+    outliers.only = TRUE,
+    criterror = 4,
+    do.visual = TRUE,
+    loglocation = "/home/hba-actig/hba-sleepdiary/diary_clean.csv",
+    coln1 = 2,
+    colid = 1,
+    nnights = max_days,
+    sleeplogidnum = FALSE,
+    #=====================
+    # Part 5
+    #=====================
+    threshold.lig = c(30),
+    threshold.mod = c(100),
+    threshold.vig = c(400),
+    boutcriter = 0.8,
+    boutcriter.in = 0.9,
+    boutcriter.lig = 0.8,
+    boutcriter.mvpa = 0.8,
+    boutdur.in = c(1,10,30),
+    boutdur.lig = c(1,10),
+    boutdur.mvpa = c(1),
+    includedaycrit.part5 = 2/3,
+    #=====================
+    # Visual report
+    #=====================
+    timewindow = c("WW"),
+    visualreport=TRUE
+  )
+}
+
+#--- RUN ---
+
+raw_files_pre <- Sys.glob("HBA*.csv")
+lapply(raw_files_pre, clean_filenames_pre)
+clean_diary(diary_raw)
+runGGIR()
+raw_files_post <- Sys.glob("HBA* RAW.csv")
+lapply(raw_files_post, clean_filenames_post)
+
+message("--- FINISHED ---")
