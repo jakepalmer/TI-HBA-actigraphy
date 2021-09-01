@@ -33,6 +33,8 @@ To check the Docker image is available, type:
 
 and you should be able to see the `ggir:r-4.1.0` image listed.
 
+![](src/docker_build.gif)
+
 ## Usage
 
 ### 1. Input format
