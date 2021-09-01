@@ -8,7 +8,7 @@ This pipeline uses GGIR to process raw actigraphy files and sleep diary. The ana
 
 > **NOTE:** This has only been tested on Mac. I've included notes on using Windows from others experience, but there may be some small differences in the commands used or requirements.
 
-## Pre-requisites
+## Prerequisites
 
 * Download and install Miniconda for your system (<https://docs.conda.io/en/latest/miniconda.html>)
 * Download and install Docker Desktop for your system (<https://www.docker.com/products/docker-desktop>)
@@ -16,6 +16,22 @@ This pipeline uses GGIR to process raw actigraphy files and sleep diary. The ana
   * Open docker
   * Go to `Settings` > `Resources` > `File Sharing`
   * Add the the analysis directory to the file sharing list
+
+## Build container
+
+When using this pipeline for the first time, the Docker container needs to be built. To do this, change directory to the `TI-HBA-actigraphy/src` folder where the `Dockerfile` is (this is basically a recipe for the container), e.g.:
+
+`cd /path/to/TI-HBA-actigraphy/src`
+
+Then build with:
+
+`docker build -t ggir:r-4.1.0 .`
+
+To check the Docker image is available, type:
+
+`docker images`
+
+and you should be able to see the `ggir:r-4.1.0` image listed.
 
 ## Usage
 
@@ -40,7 +56,10 @@ These steps are demonstrated in the clip at the bottom of this page.
 
 #### Mac
 
-* Open a new terminal window and change directory to the downloaded TI-HBA-actigraphy directory
+* Open a new terminal window and change directory to the downloaded TI-HBA-actigraphy directory, e.g.:
+
+  `cd /path/to/TI-HBA-actigraphy`
+
 * Start the docker container by typing:
 
   `python start_session.py`
